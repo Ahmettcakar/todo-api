@@ -1,12 +1,13 @@
-import { Body, Controller, Get, Post, Param, Delete, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, Delete, Patch, UseGuards} from '@nestjs/common';
 import { TodosService } from './todos.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { SimpleAuthGuard } from 'src/simple-auth.guard';
 @Controller('todos')
 export class TodosController {
 
     constructor(private readonly todosService: TodosService) { }
-
+    @UseGuards(SimpleAuthGuard) // SimpleAuthGuard'i kullanarak koruma ekliyoruz
     @Get()
     getAllTodos() {
         return this.todosService.getAll();
