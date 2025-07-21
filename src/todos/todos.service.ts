@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable , NotFoundException, UseFilters} from '@nestjs/common';
+import { HttpExceptionFilter } from '../http-exception.filter';
 
 @Injectable()
+@UseFilters(HttpExceptionFilter)
 export class TodosService {
 
     private todos = [
@@ -15,7 +17,7 @@ export class TodosService {
     getById(id: number) {
         const todo = this.todos.find(t => t.id === Number(id));
         if (!todo) {
-            return { message: 'Todo not found' };
+            throw new NotFoundException('Todo not found');
         }
         return todo;
     }
@@ -32,7 +34,7 @@ export class TodosService {
         const initialLength = this.todos.length;
         this.todos = this.todos.filter(t => t.id !== Number(id));
         if (this.todos.length === initialLength) {
-            return { message: 'Todo not found' };
+            throw new NotFoundException('Todo not found');
         }
         return { message: 'Todo deleted' };
     }
@@ -40,7 +42,7 @@ export class TodosService {
     update(id: number, updateData: { title?: string; completed?: boolean }) {
         const todo = this.todos.find(t => t.id === Number(id));
         if (!todo) {
-            return { message: 'Todo not found' };
+            throw new NotFoundException('Todo not found');
         }
         if (updateData.title !== undefined) todo.title = updateData.title;
         if (updateData.completed !== undefined) todo.completed = updateData.completed;
