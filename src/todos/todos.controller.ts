@@ -18,8 +18,8 @@ export class TodosController {
     }
     @Post()
     addTodo(@Body()  createTodoDto: CreateTodoDto) {
-        // const newTodo = this.todosService.add(createTodoDto);
-        return { message: 'Todo added', todo: createTodoDto };
+        return this.todosService.add(createTodoDto);
+        
     }
 
     @Get(':id')
