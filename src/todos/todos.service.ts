@@ -1,52 +1,45 @@
 import { Injectable , NotFoundException, UseFilters} from '@nestjs/common';
 import { HttpExceptionFilter } from '../http-exception.filter';
+import { PrismaClient } from 'generated/prisma';
+const prisma = new PrismaClient();
 
 @Injectable()
 @UseFilters(HttpExceptionFilter)
 export class TodosService {
 
-    private todos = [
-        { id: 1, title: 'Todo 1', completed: false },
-        { id: 2, title: 'Todo 2', completed: true },
-    ];
 
     getAll() {
-        return this.todos;
+        return prisma.todo.findMany();
     }
 
-    getById(id: number) {
-        const todo = this.todos.find(t => t.id === Number(id));
+    async getById(id: number) {
+        const todo = await prisma.todo.findUnique({ where: { id } });
         if (!todo) {
             throw new NotFoundException('Todo not found');
         }
         return todo;
     }
-    add(todo: { title: string; completed: boolean }) {
-        const newTodo = {
-            id: this.todos.length + 1,
-            ...todo,
-        };
-        this.todos.push(newTodo);
+    async add(todo: { title: string; completed: boolean }) {
+        const newTodo = await prisma.todo.create({ data: todo });
         return { message: 'Todo added', todo: newTodo };
     }
 
-    delete(id: number) {
-        const initialLength = this.todos.length;
-        this.todos = this.todos.filter(t => t.id !== Number(id));
-        if (this.todos.length === initialLength) {
+    async delete(id: number) {
+        try {
+            await prisma.todo.delete({ where: { id } });
+            return { message: 'Todo deleted' };
+        } catch (error) {
             throw new NotFoundException('Todo not found');
         }
-        return { message: 'Todo deleted' };
     }
 
-    update(id: number, updateData: { title?: string; completed?: boolean }) {
-        const todo = this.todos.find(t => t.id === Number(id));
-        if (!todo) {
+    async update(id: number, updateData: { title?: string; completed?: boolean }) {
+        try {
+            const todo = await prisma.todo.update({ where: { id }, data: updateData });
+            return { message: 'Todo updated', todo };
+        } catch (error) {
             throw new NotFoundException('Todo not found');
         }
-        if (updateData.title !== undefined) todo.title = updateData.title;
-        if (updateData.completed !== undefined) todo.completed = updateData.completed;
-        return { message: 'Todo updated', todo };
     }
 
 }
